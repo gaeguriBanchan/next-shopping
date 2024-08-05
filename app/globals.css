@@ -1,3 +1,6 @@
+/* base: 모든곳에 적용되는 일반적인 스타일 */
 @tailwind base;
+/* components: 특정 버튼 등을 형성하기 위해 class들을 추상화하는 컴포넌트 */
 @tailwind components;
+/* utilities: 모든곳에서 사용할 수 있는 새로운 class 만드는곳 */
 @tailwind utilities;
