@@ -4,3 +4,20 @@
 @tailwind components;
 /* utilities: 모든곳에서 사용할 수 있는 새로운 class 만드는곳 */
 @tailwind utilities;
+
+@layer base {
+  a {
+    @apply text-orange-500 underline-offset-2;
+  }
+}
+
+@layer utilities {
+  .text-bigger-hello {
+    @apply text-3xl font-semibold;
+  }
+}
+@layer components {
+  .btn {
+    @apply w-full bg-black h-10 text-white rounded-sexy-name mt-tomato;
+  }
+}
