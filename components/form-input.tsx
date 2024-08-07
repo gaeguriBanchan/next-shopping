@@ -3,6 +3,7 @@ interface IFormInputProps {
   placeholder: string;
   required: boolean;
   errors: string[];
+  name: string;
 }
 
 export default function FormInput({
@@ -10,10 +11,12 @@ export default function FormInput({
   placeholder,
   required,
   errors,
+  name,
 }: IFormInputProps) {
   return (
     <div className="flex flex-col gap-2">
       <input
+        name={name}
         className="bg-transparent rounded-md w-full h-10 focus:outline-none ring-2 focus:ring-4 transition focus:ring-orange-500 border-none ring-gray-600 placeholder:text-gray-400"
         type={type}
         placeholder={placeholder}
