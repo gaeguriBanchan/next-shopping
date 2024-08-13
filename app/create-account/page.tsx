@@ -34,11 +34,7 @@ export default function CreateAccount() {
           type="password"
           placeholder="Password"
           required
-          errors={
-            state?.fieldErrors.password
-              ? ['비밀번호는 10글자 이상 이여야 합니다.']
-              : []
-          }
+          errors={state?.fieldErrors.password}
         />
         <FormInput
           name="confirmPassword"
