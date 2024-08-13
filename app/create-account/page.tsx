@@ -20,19 +20,32 @@ export default function CreateAccount() {
           type="text"
           placeholder="UserName"
           required
+          errors={state?.fieldErrors.username}
         />
-        <FormInput name="email" type="email" placeholder="Email" required />
+        <FormInput
+          name="email"
+          type="email"
+          placeholder="Email"
+          required
+          errors={state?.fieldErrors.email}
+        />
         <FormInput
           name="password"
           type="password"
           placeholder="Password"
           required
+          errors={
+            state?.fieldErrors.password
+              ? ['비밀번호는 10글자 이상 이여야 합니다.']
+              : []
+          }
         />
         <FormInput
           name="confirmPassword"
           type="password"
           placeholder="Confirm Password"
           required
+          errors={state?.fieldErrors.confirmPassword}
         />
         <FormBtn text="Create Account" />
       </form>
