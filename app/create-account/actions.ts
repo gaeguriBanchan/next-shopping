@@ -2,7 +2,7 @@
 import { date, z } from 'zod';
 
 const checkUsername = (username: string) => {
-  !username.includes('potato');
+  return !username.includes('potato');
 };
 
 const checkPasswords = ({
@@ -11,7 +11,9 @@ const checkPasswords = ({
 }: {
   password: string;
   confirmPassword: string;
-}) => password === confirmPassword;
+}) => {
+  return password === confirmPassword;
+};
 
 // const usernameSchema = z.string().min(3).max(10);
 const formSchema = z
