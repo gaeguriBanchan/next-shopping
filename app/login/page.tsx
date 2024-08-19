@@ -1,6 +1,6 @@
 'use client';
 
-import FormBtn from '@/components/form-btn';
+import FormBtn from '@/components/button';
 import FormInput from '@/components/form-input';
 import SocialLogin from '@/components/social-login';
 import { redirect } from 'next/navigation';
