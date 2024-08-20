@@ -4,6 +4,7 @@ import {
   PASSWORD_REGEX,
   PASSWORD_REGEX_ERROR,
 } from '@/lib/constants';
+import db from '@/lib/db';
 import { z } from 'zod';
 
 const checkUsername = (username: string) => {
@@ -20,6 +21,38 @@ const checkPasswords = ({
   return password === confirmPassword;
 };
 
+const checkUniqueUsername = async (username: string) => {
+  const user = await db.user.findUnique({
+    where: {
+      username,
+    },
+    select: {
+      id: true,
+    },
+  });
+  // if (user) {
+  //   return false;
+  // } else {
+  //   return true;
+  // }
+
+  // user가 있으면 true, 없으면 false
+  // 우리는 있으면 false 로 줘야하니 !
+  return !Boolean(user);
+};
+
+const checkUniqueEmail = async (email: string) => {
+  const user = await db.user.findUnique({
+    where: {
+      email,
+    },
+    select: {
+      id: true,
+    },
+  });
+  return !Boolean(user);
+};
+
 // const usernameSchema = z.string().min(3).max(10);
 const formSchema = z
   .object({
@@ -32,17 +65,22 @@ const formSchema = z
       .max(10, '10글자 이하로 입력하세요.')
       .toLowerCase()
       .trim()
-      .transform((username) => `😀 ${username} 😀`)
+      // .transform((username) => `😀 ${username} 😀`)
       .refine(
         // false 면 출력됨.
         checkUsername,
         'potato 가 포함되는것은 안됩니다.'
-      ),
-    email: z.string().email('유효한 이메일 형식이 아닙니다.').toLowerCase(),
+      )
+      .refine(checkUniqueUsername, '이미 사용하고 있는 이름입니다.'),
+    email: z
+      .string()
+      .email('유효한 이메일 형식이 아닙니다.')
+      .toLowerCase()
+      .refine(checkUniqueEmail, '이미 사용하고 있는 이메일입니다.'),
     password: z
       .string()
-      .min(PASSWORD_MIN_LENGTH, '비밀번호는 9글자 이상 작성하세요.')
-      .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+      .min(PASSWORD_MIN_LENGTH, '비밀번호는 9글자 이상 작성하세요.'),
+    // .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirmPassword: z
       .string()
       .min(PASSWORD_MIN_LENGTH, '비밀번호는 9글자 이상 작성하세요.'),
@@ -68,10 +106,14 @@ export async function createAccount(prevState: any, formData: FormData) {
   //   console.log(e);
   // }
 
-  const result = formSchema.safeParse(data);
+  // safeParseAsync : 유효성 검사에서 async를 쓰려면
+  const result = await formSchema.safeParseAsync(data);
   if (!result.success) {
     return result.error.flatten();
   } else {
-    console.log(result.data);
+    // hash password
+    // save the user to db
+    // log the user in
+    // redirect "/home"
   }
 }
