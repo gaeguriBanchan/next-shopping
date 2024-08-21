@@ -8,8 +8,6 @@ import {
 import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import getSession from '@/lib/session';
 
@@ -25,38 +23,6 @@ const checkPasswords = ({
   confirmPassword: string;
 }) => {
   return password === confirmPassword;
-};
-
-const checkUniqueUsername = async (username: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      username,
-    },
-    select: {
-      id: true,
-    },
-  });
-  // if (user) {
-  //   return false;
-  // } else {
-  //   return true;
-  // }
-
-  // user가 있으면 true, 없으면 false
-  // 우리는 있으면 false 로 줘야하니 !
-  return !Boolean(user);
-};
-
-const checkUniqueEmail = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return !Boolean(user);
 };
 
 // const usernameSchema = z.string().min(3).max(10);
@@ -76,13 +42,8 @@ const formSchema = z
         // false 면 출력됨.
         checkUsername,
         'potato 가 포함되는것은 안됩니다.'
-      )
-      .refine(checkUniqueUsername, '이미 사용하고 있는 이름입니다.'),
-    email: z
-      .string()
-      .email('유효한 이메일 형식이 아닙니다.')
-      .toLowerCase()
-      .refine(checkUniqueEmail, '이미 사용하고 있는 이메일입니다.'),
+      ),
+    email: z.string().email('유효한 이메일 형식이 아닙니다.').toLowerCase(),
     password: z
       .string()
       .min(PASSWORD_MIN_LENGTH, '비밀번호는 9글자 이상 작성하세요.'),
@@ -90,6 +51,45 @@ const formSchema = z
     confirmPassword: z
       .string()
       .min(PASSWORD_MIN_LENGTH, '비밀번호는 9글자 이상 작성하세요.'),
+  })
+  // superRefine : 유효성 검사에 걸리면 미리 끝내는 방법 (다른 검산는 실행하지 않음.)
+  .superRefine(async ({ username }, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        username,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '이미 사용중인 이름 입니다.',
+        path: ['username'],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
+  .superRefine(async ({ email }, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '이미 사용중인 이메일 입니다.',
+        path: ['email'],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
   })
   // form 전체를 검사하면 formErrors 라고 생각하기 때문에 경로를 알려줘야한다.
   .refine(checkPasswords, {
