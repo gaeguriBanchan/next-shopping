@@ -61,7 +61,12 @@ export default async function ProductDetail({
   return (
     <div className="h-screen flex flex-col">
       <div className="relative h-1/3 w-3/4 self-center aspect-square mt-5">
-        <Image fill src={product.photo} alt={product.title} />
+        <Image
+          fill
+          src={product.photo}
+          className="object-cover"
+          alt={product.title}
+        />
       </div>
       <div className="p-5 flex items-center gap-3 border-b border-gray-700">
         <div className="size-10 overflow-hidden rounded-full">
