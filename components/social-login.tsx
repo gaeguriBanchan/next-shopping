@@ -1,5 +1,6 @@
 import { ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/16/solid';
 import Link from 'next/link';
+import { RiKakaoTalkFill } from 'react-icons/ri';
 
 export default function SocialLogin() {
   return (
@@ -27,10 +28,10 @@ export default function SocialLogin() {
         </Link>
         <Link
           className="primary-btn flex h-10 items-center justify-center gap-2"
-          href="/sms"
+          href="/kakao/start"
         >
-          <ChatBubbleOvalLeftEllipsisIcon className="size-6" />
-          <span>Continue with SMS</span>
+          <RiKakaoTalkFill className="size-6" />
+          <span>Continue with KakaoTalk</span>
         </Link>
       </div>
     </>

@@ -12,6 +12,8 @@ const publicOnlyUrls: IRoutes = {
   '/create-account': true,
   '/github/start': true,
   '/github/complete': true,
+  '/kakao/start': true,
+  '/kakao/complete': true,
 };
 
 export async function middleware(request: NextRequest) {
