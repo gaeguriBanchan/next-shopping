@@ -72,7 +72,10 @@ export default function ProductList({ initialProducts }: IProductListProps) {
       {!isLastPage ? (
         <span
           ref={trigger}
-          className="text-sm font-semibold bg-orange-500 w-fit mx-auto px-3 py-2 rounded-md hover:opacity-90 active:scale-95"
+          style={{
+            marginTop: `${page + 1 * 900}vh`,
+          }}
+          className="mb-96 text-sm font-semibold bg-orange-500 w-fit mx-auto px-3 py-2 rounded-md hover:opacity-90 active:scale-95"
         >
           {isLoading ? '로딩 중' : 'Load more'}
         </span>
