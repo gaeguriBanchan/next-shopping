@@ -6,7 +6,14 @@ import { Prisma } from '@prisma/client';
 import { unstable_cache } from 'next/cache';
 import Link from 'next/link';
 
-const getCachedProducts = unstable_cache(getInitialProducts, ['home-products']);
+const getCachedProducts = unstable_cache(
+  getInitialProducts,
+  ['home-products'],
+  // revalidate: 다시 요청이 왔을때 이전 요청이 60초가 넘었다면 다시 호출.
+  {
+    revalidate: 60,
+  }
+);
 
 async function getInitialProducts() {
   const products = await db.product.findMany({
