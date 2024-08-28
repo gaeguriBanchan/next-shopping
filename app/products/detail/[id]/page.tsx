@@ -33,6 +33,16 @@ async function getProduct(id: number) {
   return product;
 }
 
+// NextJs에서는 Api fetch도 이런식으로 revalidate 해줄수있다.
+async function getProductApi(id: number) {
+  fetch('https://api.com', {
+    next: {
+      revalidate: 60,
+      tags: ['hello'],
+    },
+  });
+}
+
 const getCachedProduct = unstable_cache(getProduct, ['product-detail'], {
   tags: ['product-detail', 'xxxx'],
 });
