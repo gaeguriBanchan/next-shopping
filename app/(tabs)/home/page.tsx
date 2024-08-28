@@ -6,13 +6,7 @@ import { Prisma } from '@prisma/client';
 import { unstable_cache } from 'next/cache';
 import Link from 'next/link';
 
-// const getCachedProducts = unstable_cache(
-//   getInitialProducts,
-//   ['home-products'],
-//   {
-//     revalidate: 60,
-//   }
-// );
+const getCachedProducts = unstable_cache(getInitialProducts, ['home-products']);
 
 async function getInitialProducts() {
   const products = await db.product.findMany({
@@ -40,7 +34,7 @@ export const metadata = {
 };
 
 export default async function Products() {
-  const initialProducts = await getInitialProducts();
+  const initialProducts = await getCachedProducts();
   return (
     <div>
       <ProductList initialProducts={initialProducts} />
