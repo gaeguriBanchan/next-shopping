@@ -34,6 +34,9 @@ export const metadata = {
   title: 'Home',
 };
 
+// dynamic 은 원래는 'auto'. 'force-dynamic'로 바꾸면 static 페이지가 dynamic으로 바뀜.=> 매번 방문할때 마다 다 새로 만들어진다.
+export const dynamic = 'force-dynamic';
+
 export default async function Products() {
   const initialProducts = await getCachedProducts();
   const revalidate = async () => {
