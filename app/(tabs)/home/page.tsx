@@ -31,12 +31,14 @@ export default async function Products() {
   return (
     <div>
       <ProductList initialProducts={initialProducts} />
-      <Link
-        href="/products/add"
-        className="bg-orange-500 flex items-center justify-center rounded-full size-16 fixed bottom-24 right-8 text-white transition-colors hover:bg-orange-400"
-      >
-        <PlusIcon className="size-10" />
-      </Link>
+      <div className="flex max-w-screen-sm justify-end p-5">
+        <Link
+          href="/products/add"
+          className="bg-orange-500 flex items-center justify-center rounded-full size-16 fixed bottom-24 text-white transition-colors hover:bg-orange-400"
+        >
+          <PlusIcon className="size-10" />
+        </Link>
+      </div>
     </div>
   );
 }
