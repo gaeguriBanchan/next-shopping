@@ -61,7 +61,7 @@ export default async function Modal({ params }: { params: { id: string } }) {
   return (
     <div className="absolute w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-60 left-0 top-0">
       <BtnBack />
-      <div className="max-w-screen-sm h-2/3 flex flex-col justify-center w-full bg-gray-800 rounded-md">
+      <div className="max-w-screen-sm h-2/3 flex flex-col justify-center w-full bg-gray-800 rounded-md animate-fade">
         <div className="bg-gray-700 text-gray-200 h-1/2 rounded-md flex justify-center items-center overflow-hidden">
           <div className="relative h-full w-full self-center aspect-square">
             <Image
