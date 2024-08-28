@@ -35,7 +35,11 @@ export const metadata = {
 };
 
 // dynamic 은 원래는 'auto'. 'force-dynamic'로 바꾸면 static 페이지가 dynamic으로 바뀜.=> 매번 방문할때 마다 다 새로 만들어진다.
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
+
+// revalidate : 특정 시간이 지나면 revalidate. production mode에서 빌드했을때만 작동함. (빌드하고 npm run start)
+// static 페이지로 남아있을수있음. 새로고침할때마다 모든걸 다시 부르지 않아서 좋다.
+export const revalidate = 60;
 
 export default async function Products() {
   const initialProducts = await getCachedProducts();
