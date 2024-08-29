@@ -7,31 +7,13 @@ import { notFound, redirect } from 'next/navigation';
 import { UserIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 import { formatToWon } from '@/lib/utils';
+import { getCachedProduct, getIsOwner } from '@/app/products/detail/[id]/page';
 
-async function getIsOwner(userId: number) {
-  const session = await getSession();
-  if (session.id) {
-    return session.id === userId;
-  }
-  return false;
-}
-
-async function getProduct(id: number) {
-  // await new Promise((resolve) => setTimeout(resolve, 60000));
-  const product = await db.product.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      user: {
-        select: {
-          username: true,
-          avatar: true,
-        },
-      },
-    },
-  });
-  return product;
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const product = await getCachedProduct(Number(params.id));
+  return {
+    title: product?.title,
+  };
 }
 
 export default async function Modal({ params }: { params: { id: string } }) {
@@ -41,22 +23,11 @@ export default async function Modal({ params }: { params: { id: string } }) {
   if (isNaN(id)) {
     return notFound();
   }
-  const product = await getProduct(id);
+  const product = await getCachedProduct(id);
   if (!product) {
     return notFound();
   }
   const isOwner = await getIsOwner(product.userId);
-
-  const deleteProduct = async () => {
-    'use server';
-    await db.product.delete({
-      where: {
-        id,
-      },
-      select: null,
-    });
-    redirect('/products');
-  };
 
   return (
     <div className="absolute w-full h-full z-50 flex items-center justify-center bg-black bg-opacity-60 left-0 top-0">
@@ -100,11 +71,12 @@ export default async function Modal({ params }: { params: { id: string } }) {
               {formatToWon(product.price)}원
             </span>
             {isOwner ? (
-              <form action={deleteProduct}>
-                <button className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold">
-                  Delete product
-                </button>
-              </form>
+              <Link
+                className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
+                href={`/products/edit/${id}`}
+              >
+                상품 수정
+              </Link>
             ) : null}
             <Link
               className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"

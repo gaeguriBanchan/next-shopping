@@ -39,21 +39,21 @@ export const metadata = {
 
 // revalidate : 특정 시간이 지나면 revalidate. production mode에서 빌드했을때만 작동함. (빌드하고 npm run start)
 // static 페이지로 남아있을수있음. 새로고침할때마다 모든걸 다시 부르지 않아서 좋다.
-export const revalidate = 60;
+export const revalidate = 1800;
 
 export default async function Products() {
   const initialProducts = await getCachedProducts();
-  const revalidate = async () => {
-    'use server';
-    // revalidatePath : 경로과 관련된 모든 cache를 revalidate.
-    revalidatePath('/home');
-  };
+  // const revalidate = async () => {
+  //   'use server';
+  //   // revalidatePath : 경로과 관련된 모든 cache를 revalidate.
+  //   revalidatePath('/home');
+  // };
   return (
     <div>
       <ProductList initialProducts={initialProducts} />
-      <form action={revalidate}>
+      {/* <form action={revalidate}>
         <button>revalidate</button>
-      </form>
+      </form> */}
       <div className="flex max-w-screen-sm justify-end p-5">
         <Link
           href="/products/add"

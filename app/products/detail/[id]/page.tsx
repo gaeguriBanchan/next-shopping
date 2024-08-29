@@ -6,8 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { unstable_cache, revalidateTag } from 'next/cache';
+import { Prisma } from '@prisma/client';
 
-async function getIsOwner(userId: number) {
+export async function getIsOwner(userId: number) {
   const session = await getSession();
   if (session.id) {
     return session.id === userId;
@@ -15,7 +16,7 @@ async function getIsOwner(userId: number) {
   return false;
 }
 
-async function getProduct(id: number) {
+export async function getProduct(id: number) {
   // await new Promise((resolve) => setTimeout(resolve, 60000));
   const product = await db.product.findUnique({
     where: {
@@ -33,6 +34,8 @@ async function getProduct(id: number) {
   return product;
 }
 
+export type ProductType = Prisma.PromiseReturnType<typeof getProduct>;
+
 // NextJs에서는 Api fetch도 이런식으로 revalidate 해줄수있다.
 async function getProductApi(id: number) {
   fetch('https://api.com', {
@@ -43,33 +46,33 @@ async function getProductApi(id: number) {
   });
 }
 
-const getCachedProduct = unstable_cache(getProduct, ['product-detail'], {
+export const getCachedProduct = unstable_cache(getProduct, ['product-detail'], {
   tags: ['product-detail', 'xxxx'],
 });
 
-async function getProductTitle(id: number) {
-  console.log('title');
-  const product = await db.product.findUnique({
-    where: {
-      id,
-    },
-    select: {
-      title: true,
-    },
-  });
-  return product;
-}
+// async function getProductTitle(id: number) {
+//   console.log('title');
+//   const product = await db.product.findUnique({
+//     where: {
+//       id,
+//     },
+//     select: {
+//       title: true,
+//     },
+//   });
+//   return product;
+// }
 
-const getCachedProductTitle = unstable_cache(
-  getProductTitle,
-  ['product-title'],
-  {
-    tags: ['product-title', 'xxxx'],
-  }
-);
+// const getCachedProductTitle = unstable_cache(
+//   getProductTitle,
+//   ['product-title'],
+//   {
+//     tags: ['product-title', 'xxxx'],
+//   }
+// );
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  const product = await getCachedProductTitle(Number(params.id));
+  const product = await getCachedProduct(Number(params.id));
   return {
     title: product?.title,
   };
@@ -84,7 +87,7 @@ export default async function ProductDetail({
   if (isNaN(id)) {
     return notFound();
   }
-  const product = await getProduct(id);
+  const product = await getCachedProduct(id);
   if (!product) {
     return notFound();
   }
@@ -104,7 +107,7 @@ export default async function ProductDetail({
       },
       select: null,
     });
-    redirect('/products');
+    redirect('/home');
   };
 
   return (
@@ -148,12 +151,18 @@ export default async function ProductDetail({
           //     Delete product
           //   </button>
           // </form>
-          <form action={revalidate}>
-            <button className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold">
-              Revalidate title cache
-            </button>
-          </form>
-        ) : null}
+          <Link
+            className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold"
+            href={`/products/edit/${id}`}
+          >
+            상품페이지 수정
+          </Link>
+        ) : // <form action={revalidate}>
+        //   <button className="bg-red-500 px-5 py-2.5 rounded-md text-white font-semibold">
+        //     Revalidate title cache
+        //   </button>
+        // </form>
+        null}
         <Link
           className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
           href={``}

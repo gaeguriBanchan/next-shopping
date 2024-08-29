@@ -5,12 +5,13 @@ import fs from 'fs/promises';
 import db from '@/lib/db';
 import getSession from '@/lib/session';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { title } from 'process';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { getCachedProduct } from '@/app/products/detail/[id]/page';
 
 const productSchema = z.object({
-  photo: z.string({
-    required_error: 'Photo is required',
-  }),
+  id: z.string(),
+  photo: z.string().optional(),
   title: z
     .string({
       required_error: 'Title is required',
@@ -26,25 +27,45 @@ const productSchema = z.object({
   }),
 });
 
-export async function uploadProduct(_: any, formData: FormData) {
+export async function editProduct(_: any, formData: FormData) {
   const data = {
+    id: formData.get('id'),
     photo: formData.get('photo'),
     title: formData.get('title'),
     price: formData.get('price'),
     description: formData.get('description'),
   };
-  if (data.photo instanceof File) {
+
+  let newPhotoPath = null;
+
+  // if (data.photo instanceof File) {
+  //   const photoData = await data.photo.arrayBuffer();
+  //   await fs.appendFile(`./public/${data.photo.name}`, Buffer.from(photoData));
+  //   data.photo = `/${data.photo.name}`;
+  // }
+  if (data.photo instanceof File && data.photo.size > 0) {
+    // 파일이 존재하고 크기가 0보다 큰지 확인
     const photoData = await data.photo.arrayBuffer();
     await fs.appendFile(`./public/${data.photo.name}`, Buffer.from(photoData));
-    data.photo = `/${data.photo.name}`;
+    newPhotoPath = `/${data.photo.name}`;
   }
-  const result = productSchema.safeParse(data);
+  // const result = productSchema.safeParse(data);
+  const result = productSchema.safeParse({
+    ...data,
+    photo: newPhotoPath || undefined, // photo가 없으면 undefined로 처리
+  });
   if (!result.success) {
     return result.error.flatten();
   } else {
     const session = await getSession();
     if (session.id) {
-      const product = await db.product.create({
+      const id = Number(result.data.id);
+      const prevProduct = await getCachedProduct(id);
+      if (!result.data.photo) {
+        result.data.photo = prevProduct?.photo;
+      }
+      const product = await db.product.update({
+        where: { id: id },
         data: {
           title: result.data.title,
           description: result.data.description,
@@ -56,13 +77,11 @@ export async function uploadProduct(_: any, formData: FormData) {
             },
           },
         },
-        select: {
-          id: true,
-        },
       });
       revalidatePath('/home');
+      revalidateTag('product-detail');
       redirect(`/products/detail/${product.id}`);
-      //redirect("/products")
+      // redirect('/home');
     }
   }
 }
