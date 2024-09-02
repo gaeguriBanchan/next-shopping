@@ -6,6 +6,8 @@ import { EyeIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { formatToTimeAgo } from '@/lib/utils';
 import BtnLike from '@/components/btn-like';
+import { Prisma } from '@prisma/client';
+import CommentsList from '@/components/comments-list';
 
 async function getPost(id: number) {
   try {
@@ -56,6 +58,29 @@ async function getCachedLikeStatus(postId: number) {
   return cachedOperation(postId, userId!);
 }
 
+const getComments = async (postId: number) => {
+  const comments = await db.comment.findMany({
+    where: {
+      postId,
+    },
+    select: {
+      id: true,
+      payload: true,
+      created_at: true,
+      userId: true,
+      user: {
+        select: {
+          avatar: true,
+          username: true,
+        },
+      },
+    },
+  });
+  return comments;
+};
+
+export type initialComments = Prisma.PromiseReturnType<typeof getComments>;
+
 async function getLikeStatus(postId: number, userId: number) {
   // const session = await getSession();
   const isLiked = await db.like.findUnique({
@@ -76,6 +101,19 @@ async function getLikeStatus(postId: number, userId: number) {
     isLiked: Boolean(isLiked),
   };
 }
+export const getUserProfile = async () => {
+  const session = await getSession();
+  const user = await db.user.findUnique({
+    where: {
+      id: session.id,
+    },
+    select: {
+      username: true,
+      avatar: true,
+    },
+  });
+  return user;
+};
 
 export default async function PostDetail({
   params,
@@ -83,6 +121,7 @@ export default async function PostDetail({
   params: { id: string };
 }) {
   const id = Number(params.id);
+  const user = await getUserProfile();
   if (isNaN(id)) {
     return notFound();
   }
@@ -118,35 +157,50 @@ export default async function PostDetail({
       revalidateTag(`like-status-${id}`);
     } catch (e) {}
   };
+  const session = await getSession();
   const { likeCount, isLiked } = await getCachedLikeStatus(id);
+  const initialComments = await getComments(id);
   return (
-    <div className="p-5 text-white">
-      <div className="flex items-center gap-2 mb-2">
-        <Image
-          width={28}
-          height={28}
-          className="size-7 rounded-full"
-          src={post.user.avatar!}
-          alt={post.user.username}
-        />
-        <div>
-          <span className="text-sm font-semibold">{post.user.username}</span>
-          <div className="text-xs">
-            <span>{formatToTimeAgo(post.created_at.toString())}</span>
+    <div className="flex flex-col gap-5 p-5">
+      <div className="p-5 text-white">
+        <div className="flex items-center gap-2 mb-2">
+          {post.user.avatar ? (
+            <Image
+              width={28}
+              height={28}
+              className="size-7 rounded-full"
+              src={post.user.avatar!}
+              alt={post.user.username}
+            />
+          ) : (
+            <div className="size-7 rounded-full bg-neutral-500" />
+          )}
+          <div>
+            <span className="text-sm font-semibold">{post.user.username}</span>
+            <div className="text-xs">
+              <span>{formatToTimeAgo(post.created_at.toString())}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <h2 className="text-lg font-semibold">{post.title}</h2>
-      <p className="mb-5">{post.description}</p>
-      <div className="flex flex-col gap-5 items-start">
-        <div className="flex items-center gap-2 text-neutral-400 text-sm">
-          <EyeIcon className="size-5" />
-          <span>조회 {post.views}</span>
+        <h2 className="text-lg font-semibold">{post.title}</h2>
+        <p className="mb-5">{post.description}</p>
+        <div className="flex flex-col gap-5 items-start">
+          <div className="flex items-center gap-2 text-neutral-400 text-sm">
+            <EyeIcon className="size-5" />
+            <span>조회 {post.views}</span>
+          </div>
+          <form action={isLiked ? dislikePost : likePost}>
+            <BtnLike isLiked={isLiked} likeCount={likeCount} postId={id} />
+          </form>
         </div>
-        <form action={isLiked ? dislikePost : likePost}>
-          <BtnLike isLiked={isLiked} likeCount={likeCount} postId={id} />
-        </form>
       </div>
+      <CommentsList
+        postId={id}
+        userId={session.id!}
+        username={user?.username!}
+        avatar={user?.avatar!}
+        initialComments={initialComments}
+      />
     </div>
   );
 }
